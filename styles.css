@@ -1253,7 +1253,12 @@ html { scroll-behavior: smooth; }
   font-size: 14px; background: #fff;
 }
 .clients-controls #clientsSearch:focus { outline: none; border-color: var(--gold, #a88847); }
-.clients-list { display: flex; flex-direction: column; gap: 10px; max-height: 620px; overflow-y: auto; }
+/* ~5 client rows tall, then scroll inside its own container (keeps the page short as the roster grows) */
+.clients-list { display: flex; flex-direction: column; gap: 10px; max-height: 360px; overflow-y: auto; padding-right: 4px; scrollbar-width: thin; scrollbar-color: var(--gold) var(--surface); }
+.clients-list::-webkit-scrollbar { width: 9px; }
+.clients-list::-webkit-scrollbar-track { background: var(--surface); border-radius: 4px; }
+.clients-list::-webkit-scrollbar-thumb { background: var(--gold); border-radius: 4px; }
+.clients-list::-webkit-scrollbar-thumb:hover { background: var(--gold-deep); }
 .client-row {
   display: flex; align-items: center; gap: 12px;
   background: #fff; border: 1px solid var(--line, #e6dcc8); border-radius: 12px;
