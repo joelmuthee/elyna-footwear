@@ -1,0 +1,16 @@
+name = "elynafootwear-api"
+main = "src/index.js"
+compatibility_date = "2025-01-01"
+account_id = "58685495706b973821d77208248c66fc"
+
+[[kv_namespaces]]
+binding = "BAGS"
+id = "e24e80bc6560452ab050582b0c265b99"
+
+# Workers AI — Llama 3.1 8B (text) + Llama 3.2 11B Vision for IG bulk-sync
+# classification. Free tier: 10k requests/day, comfortable for daily syncs.
+[ai]
+binding = "AI"
+
+# Auth token set as a secret — never committed:
+#   npx wrangler secret put ADMIN_TOKEN

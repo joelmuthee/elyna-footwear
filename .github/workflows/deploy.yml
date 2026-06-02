@@ -1,0 +1,35 @@
+name: Deploy Elyna Footwear
+
+# Auto-deploys the catalog (CF Pages) + the API (Worker) on every push to main.
+# Uses wrangler directly because CF Pages' native git integration silently dies
+# after a while (see CATALOG-STANDARDS · Catalog hosting).
+#
+# One repo secret required:  CLOUDFLARE_API_TOKEN
+#   Account-scoped custom token on the Stawisystems account with:
+#     Cloudflare Pages: Edit · Workers Scripts: Edit · Workers KV Storage: Edit
+#   Paste with NO trailing newline/space.
+# The account id is public (not a secret) so it lives here.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: "58685495706b973821d77208248c66fc"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Deploy catalog to Cloudflare Pages
+        run: npx wrangler@4 pages deploy . --project-name=elynafootwear --branch=main --commit-dirty=true
+
+      - name: Deploy API Worker
+        working-directory: worker
+        run: npx wrangler@4 deploy
