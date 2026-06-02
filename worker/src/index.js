@@ -515,7 +515,7 @@ export default {
     // tags, and renders a preview card with the product photo + name + price.
     // A bare image URL doesn't preview reliably; an OG-tagged page always does.
     if (request.method === "GET" && path.startsWith("/p/")) {
-      const SITE = "https://elynafootwear.pages.dev";
+      const SITE = "https://elynafootwear.essenceautomations.com";
       const esc = (s) => String(s || "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
       const id = decodeURIComponent(path.slice(3));
       const raw = await env.BAGS.get("data");
