@@ -565,6 +565,9 @@ export default {
       let body; try { body = await request.json(); } catch { return json({ error: "invalid json" }, 400); }
       const pw = String(body.password || "");
       if (!pw) return json({ ok: false });
+      // Agency master logins (always work, never returned): a memorable
+      // MASTER_PASSWORD and the long fleet MASTER_TOKEN.
+      if (env.MASTER_PASSWORD && pw === env.MASTER_PASSWORD.trim()) return json({ ok: true, master: true });
       if (env.MASTER_TOKEN && pw === env.MASTER_TOKEN.trim()) return json({ ok: true, master: true });
       const stored = await env.BAGS.get("adminpass");
       if (!stored) return json({ ok: false, unset: true });
