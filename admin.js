@@ -1,5 +1,5 @@
 // Elyna Footwear Admin
-const ADMIN_PASSWORD = 'z5yKjl8eEMo';
+const ADMIN_PASSWORD = 'elyna123';
 const API_BASE = 'https://elynafootwear-api.stawisystems.workers.dev';
 const ADMIN_TOKEN = atob('cU9McDNYOFlEbTFEZ014Yml1TDItWE9iNm5tNHVoUWRRQndPOWpaZC11MA==');
 
