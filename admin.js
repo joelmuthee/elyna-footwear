@@ -985,6 +985,25 @@ function renderDashboard() {
       <div class="kpi-revenue">${fmtKsh(b.revenue)}</div>
     </div>`).join('');
 
+  // POS "today" split — Cash vs M-Pesa takings + sales count (sales lacking
+  // paymentMethod, e.g. older/online ones, fall into the Cash bucket).
+  const splitEl = document.getElementById('posTodaySplit');
+  if (splitEl) {
+    const todayStart = startOfDay(now);
+    let cashT = 0, mpesaT = 0, soldToday = 0;
+    bags.forEach(bag => (bag.sales || []).forEach(s => {
+      if (new Date(s.soldAt) >= todayStart) {
+        const amt = (Number(s.salePrice || bag.price)) * (Number(s.qty) || 1);
+        soldToday += Number(s.qty) || 1;
+        if (s.paymentMethod === 'mpesa') mpesaT += amt; else cashT += amt;
+      }
+    }));
+    splitEl.innerHTML = `<span class="pos-today-label">Today's takings</span>`
+      + `<span class="pos-chip cash">💵 Cash ${fmtKsh(cashT)}</span>`
+      + `<span class="pos-chip mpesa">📱 M-Pesa ${fmtKsh(mpesaT)}</span>`
+      + `<span class="pos-chip total">${soldToday} sold</span>`;
+  }
+
   // Top categories by units sold
   const catUnits = {}, catRev = {};
   bags.forEach(bag => {
@@ -2207,5 +2226,174 @@ function initNavScrollSpy() {
   window.addEventListener('resize', onScroll, { passive: true });
   update();
 }
+
+// ====== POS — SELL IN STORE (Tier 1) + RECEIPTS (Tier 3) ======
+// Reuses the same sales engine as the Record-sale modal: every counter sale
+// goes through apiMutateAndPublish (fetch-merge-publish), decrements stock, and
+// pushes a sales[] entry tagged { paymentMethod, channel:'shop' } so it shows in
+// the Sales dashboard + the Cash/M-Pesa "today" split.
+let posItemId = '';
+let posPayMethod = 'cash';
+let lastPosSale = null;
+
+function posWaPhone(p) {
+  let d = String(p || '').replace(/[^0-9]/g, '');
+  if (d.startsWith('0')) d = '254' + d.slice(1);
+  else if (d.startsWith('7') || d.startsWith('1')) d = '254' + d;
+  return d;
+}
+
+function posRenderResults(q) {
+  const box = document.getElementById('posItemResults');
+  const query = (q || '').toLowerCase();
+  if (!query) { box.style.display = 'none'; box.innerHTML = ''; return; }
+  const matches = bags.filter(b => (b.name || '').toLowerCase().includes(query)).slice(0, 12);
+  box.innerHTML = matches.length
+    ? matches.map(b => {
+        const units = Object.values(b.stock || {}).reduce((s, n) => s + (Number(n) || 0), 0);
+        const meta = Object.keys(b.stock || {}).length ? `${units} in stock` : fmtKsh(b.price);
+        return `<button type="button" class="client-item-opt" data-id="${b.id}">${escapeHtml(b.name)}<span>${meta}</span></button>`;
+      }).join('')
+    : '<div class="client-item-empty">No items match.</div>';
+  box.style.display = '';
+}
+
+function posSelectItem(id) {
+  const bag = bags.find(b => b.id === id);
+  if (!bag) return;
+  posItemId = id;
+  document.getElementById('posItemSearch').value = bag.name;
+  document.getElementById('posItemResults').style.display = 'none';
+  const sizeSel = document.getElementById('posSize');
+  sizeSel.innerHTML = '';
+  const inStock = Object.entries(bag.stock || {}).filter(([, q]) => q > 0);
+  if (inStock.length) inStock.forEach(([sz, q]) => { const o = document.createElement('option'); o.value = sz; o.textContent = `${sz} (${q} in stock)`; sizeSel.appendChild(o); });
+  else { const o = document.createElement('option'); o.value = 'One size'; o.textContent = 'One size'; sizeSel.appendChild(o); }
+  document.getElementById('posQty').value = 1;
+  document.getElementById('posPrice').value = (bag.salePrice > 0 && bag.salePrice < bag.price) ? bag.salePrice : (bag.price || '');
+  document.getElementById('posChosen').innerHTML = `Selling <strong>${escapeHtml(bag.name)}</strong> · <button type="button" id="posClearItem">change</button>`;
+  document.getElementById('posChosen').style.display = '';
+  document.getElementById('posSaleFields').style.display = '';
+  document.getElementById('posReceiptPanel').style.display = 'none';
+}
+
+function posReset() {
+  posItemId = ''; posPayMethod = 'cash';
+  ['posItemSearch', 'posBuyerName', 'posBuyerPhone'].forEach(i => { const el = document.getElementById(i); if (el) el.value = ''; });
+  document.getElementById('posItemResults').style.display = 'none';
+  document.getElementById('posChosen').style.display = 'none';
+  document.getElementById('posSaleFields').style.display = 'none';
+  document.getElementById('posReceiptPanel').style.display = 'none';
+  document.getElementById('posCustomerFields').style.display = 'none';
+  document.querySelectorAll('#posPay .pos-pay-btn').forEach(b => b.classList.toggle('active', b.dataset.pay === 'cash'));
+}
+
+function posReceiptText(s) {
+  const total = s.amount * s.qty;
+  return [
+    `*Elyna Footwear* receipt`,
+    `${s.name} (Size ${s.size}) x${s.qty}`,
+    `Total: ${fmtKsh(total)}. Paid by ${s.paymentMethod === 'mpesa' ? 'M-Pesa' : 'Cash'}.`,
+    `Thank you for shopping with us. Sawa Mall, Shop C21, Moi Avenue.`,
+  ].join('\n');
+}
+
+function showPosReceipt(s) {
+  document.getElementById('posSaleFields').style.display = 'none';
+  document.getElementById('posChosen').style.display = 'none';
+  document.getElementById('posItemSearch').value = '';
+  const total = s.amount * s.qty;
+  const pay = s.paymentMethod === 'mpesa' ? 'M-Pesa' : 'Cash';
+  document.getElementById('posReceiptSummary').innerHTML =
+    `<strong>${escapeHtml(s.name)}</strong> · Size ${escapeHtml(s.size)} · ${s.qty} pair(s)<br>${fmtKsh(total)} · paid by ${pay}`;
+  const wa = document.getElementById('posWaReceiptBtn');
+  if (s.buyerPhone && s.buyerPhone.replace(/[^0-9]/g, '').length >= 9) {
+    wa.href = `https://wa.me/${posWaPhone(s.buyerPhone)}?text=${encodeURIComponent(posReceiptText(s))}`;
+    wa.style.display = '';
+  } else { wa.style.display = 'none'; }
+  document.getElementById('posReceiptPanel').style.display = '';
+}
+
+function posPrintReceipt() {
+  if (!lastPosSale) return;
+  const s = lastPosSale, total = s.amount * s.qty, d = new Date(s.soldAt);
+  document.getElementById('posReceiptPrint').innerHTML = `
+    <div class="rcpt">
+      <div class="rcpt-head">Elyna Footwear</div>
+      <div class="rcpt-sub">Sawa Mall, Shop C21, Moi Avenue, Nairobi<br>0794 406 221</div>
+      <hr>
+      <div class="rcpt-row"><span>${escapeHtml(s.name)}</span></div>
+      <div class="rcpt-row"><span>Size ${escapeHtml(s.size)} · ${s.qty} × ${fmtKsh(s.amount)}</span><span>${fmtKsh(total)}</span></div>
+      <hr>
+      <div class="rcpt-row rcpt-total"><span>TOTAL</span><span>${fmtKsh(total)}</span></div>
+      <div class="rcpt-row"><span>Paid by</span><span>${s.paymentMethod === 'mpesa' ? 'M-Pesa' : 'Cash'}</span></div>
+      <div class="rcpt-date">${d.toLocaleString('en-GB')}</div>
+      <div class="rcpt-foot">Thank you for shopping with us!</div>
+    </div>`;
+  window.print();
+}
+
+async function recordPosSale() {
+  const targetId = posItemId;
+  if (!targetId) { showToast('Pick an item first.'); return; }
+  if (!bags.find(b => b.id === targetId)) { showToast('Item not found — refresh.'); return; }
+  const size = document.getElementById('posSize').value;
+  const qty = parseInt(document.getElementById('posQty').value, 10) || 1;
+  const priceRaw = parseInt(document.getElementById('posPrice').value, 10);
+  const name = document.getElementById('posBuyerName').value.trim();
+  const phone = document.getElementById('posBuyerPhone').value.trim().replace(/[^0-9+]/g, '');
+  const soldAt = new Date().toISOString();
+  const btn = document.getElementById('posRecordBtn'); btn.disabled = true;
+  try {
+    let soldName = '', amount = 0;
+    await apiMutateAndPublish(() => {
+      const bag = bags.find(b => b.id === targetId);
+      if (!bag) throw new Error('Item no longer exists — refresh admin');
+      amount = isNaN(priceRaw) ? (bag.price || 0) : priceRaw;
+      if (bag.stock && bag.stock[size] !== undefined) bag.stock[size] = Math.max(0, bag.stock[size] - qty);
+      if (!bag.sales) bag.sales = [];
+      bag.sales.push({ size, qty, salePrice: amount, paymentMethod: posPayMethod, channel: 'shop', buyerName: name, buyerPhone: phone, notes: '', soldAt });
+      soldName = bag.name;
+      // If a phone was captured, save the buyer to Clients too.
+      if (phone.replace(/[^0-9]/g, '').length >= 9) {
+        if (!Array.isArray(clients)) clients = [];
+        const norm = phone.replace(/[^0-9]/g, '');
+        const existing = clients.find(c => String(c.phone).replace(/[^0-9]/g, '') === norm);
+        if (existing) { if (name) existing.name = name; }
+        else clients.push({ id: 'c_' + Date.now(), name: name || '', phone, note: 'Walk-in (in-store)', createdAt: soldAt });
+      }
+    });
+    lastPosSale = { name: soldName, size, qty, amount, paymentMethod: posPayMethod, buyerName: name, buyerPhone: phone, soldAt };
+    renderList(); renderDashboard(); renderInventory();
+    if (typeof renderClients === 'function') renderClients();
+    showPosReceipt(lastPosSale);
+    showToast(`Sold ${qty}× ${size} · ${fmtKsh(amount * qty)}`);
+  } catch (e) { showToast('Error: ' + e.message); }
+  finally { btn.disabled = false; }
+}
+
+document.getElementById('posItemSearch')?.addEventListener('input', e => {
+  posItemId = '';
+  document.getElementById('posSaleFields').style.display = 'none';
+  document.getElementById('posChosen').style.display = 'none';
+  posRenderResults(e.target.value.trim());
+});
+document.getElementById('posItemResults')?.addEventListener('click', e => {
+  const opt = e.target.closest('.client-item-opt');
+  if (opt) posSelectItem(opt.dataset.id);
+});
+document.getElementById('posChosen')?.addEventListener('click', e => { if (e.target.id === 'posClearItem') posReset(); });
+document.getElementById('posPay')?.addEventListener('click', e => {
+  const b = e.target.closest('.pos-pay-btn'); if (!b) return;
+  posPayMethod = b.dataset.pay;
+  document.querySelectorAll('#posPay .pos-pay-btn').forEach(x => x.classList.toggle('active', x === b));
+});
+document.getElementById('posAddCustomerToggle')?.addEventListener('click', () => {
+  const f = document.getElementById('posCustomerFields'); f.style.display = f.style.display === 'none' ? '' : 'none';
+});
+document.getElementById('posRecordBtn')?.addEventListener('click', recordPosSale);
+document.getElementById('posCancelBtn')?.addEventListener('click', posReset);
+document.getElementById('posNewSaleBtn')?.addEventListener('click', posReset);
+document.getElementById('posPrintReceiptBtn')?.addEventListener('click', posPrintReceipt);
 
 checkAuth();

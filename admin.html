@@ -9,7 +9,7 @@
 <meta name="theme-color" content="#3a1652">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=20260601m">
+<link rel="stylesheet" href="styles.css?v=elyna3">
 <script src="https://www.google.com/recaptcha/enterprise.js?render=6LeDBFwpAAAAAJe8ux9-imrqZ2ueRsEtdiWoDDpX" async defer></script>
 </head>
 <body style="background:#f8f6f2;">
@@ -67,6 +67,7 @@
   <!-- ====== QUICK NAV ====== -->
   <nav class="admin-nav" id="adminNav">
     <a href="#igSyncDash" class="admin-nav-cta">⚡ Add stock from IG</a>
+    <a href="#posDash" class="admin-nav-pos">🛒 Sell in store</a>
     <a href="#addForm">+ Add manually</a>
     <a href="#salesDash">Sales</a>
     <a href="#invDash">Inventory</a>
@@ -76,6 +77,58 @@
     <a href="#allItems">All items <span class="admin-nav-count" id="navItemCount"></span></a>
     <a href="#trashSection">Trash <span class="admin-nav-count" id="navTrashCount"></span></a>
   </nav>
+
+  <!-- ====== POS — SELL IN STORE (Tier 1 + receipts) ====== -->
+  <section class="dash" id="posDash">
+    <h2 class="dash-title">🛒 Sell in store</h2>
+    <p class="pos-sub">Ring up a counter sale. Stock updates and it lands in your Sales totals automatically. Tap <strong>M-Pesa</strong> just to note how you were paid.</p>
+    <div id="posTodaySplit" class="pos-today"></div>
+
+    <div class="pos-card">
+      <div class="field">
+        <label>Find the shoe</label>
+        <input id="posItemSearch" type="search" placeholder="Search by name…" autocomplete="off">
+        <div id="posItemResults" class="pos-results" style="display:none;"></div>
+      </div>
+      <div id="posChosen" class="pos-chosen" style="display:none;"></div>
+
+      <div id="posSaleFields" style="display:none;">
+        <div class="pos-row">
+          <div class="field"><label>Size</label><select id="posSize"></select></div>
+          <div class="field pos-qty"><label>Qty</label><input id="posQty" type="number" min="1" value="1"></div>
+          <div class="field"><label>Price (Ksh)</label><input id="posPrice" type="number" min="0"></div>
+        </div>
+        <div class="field">
+          <label>Payment</label>
+          <div class="pos-pay" id="posPay">
+            <button type="button" class="pos-pay-btn active" data-pay="cash">💵 Cash</button>
+            <button type="button" class="pos-pay-btn" data-pay="mpesa">📱 M-Pesa</button>
+          </div>
+        </div>
+        <div class="field">
+          <button type="button" id="posAddCustomerToggle" class="pos-link">+ Add customer <small>(optional — for a receipt + saving them to Clients)</small></button>
+          <div id="posCustomerFields" style="display:none;margin-top:8px;">
+            <input id="posBuyerName" type="text" placeholder="Customer name (optional)">
+            <input id="posBuyerPhone" type="tel" placeholder="Phone e.g. 0712345678 (optional)" style="margin-top:8px;">
+          </div>
+        </div>
+        <div class="admin-actions">
+          <button class="btn-admin primary" id="posRecordBtn" type="button">Record sale</button>
+          <button class="btn-admin" id="posCancelBtn" type="button">Clear</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="posReceiptPanel" class="pos-receipt-panel" style="display:none;">
+      <div class="pos-done">✓ Sale recorded</div>
+      <div id="posReceiptSummary" class="pos-receipt-summary"></div>
+      <div class="admin-actions">
+        <a id="posWaReceiptBtn" class="btn-admin primary" target="_blank" rel="noopener" style="display:none;">Send WhatsApp receipt</a>
+        <button id="posPrintReceiptBtn" class="btn-admin" type="button">Print receipt</button>
+        <button id="posNewSaleBtn" class="btn-admin" type="button">New sale</button>
+      </div>
+    </div>
+  </section>
 
   <!-- ====== SALES DASHBOARD ====== -->
   <section class="dash" id="salesDash">
@@ -395,6 +448,9 @@
 
 <div class="toast" id="toast"></div>
 
+<!-- Printable POS receipt (hidden on screen, shown only when printing) -->
+<div id="posReceiptPrint" aria-hidden="true"></div>
+
 <!-- SALE MODAL -->
 <div id="saleModal" class="modal" style="display:none;">
   <div class="modal-card">
@@ -593,6 +649,6 @@
   </div>
 </div>
 
-<script src="admin.js?v=elyna2"></script>
+<script src="admin.js?v=elyna3"></script>
 </body>
 </html>
