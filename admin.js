@@ -27,18 +27,59 @@ function checkAuth() {
 }
 loginBtn.addEventListener('click', login);
 loginPassword.addEventListener('keypress', e => { if (e.key === 'Enter') login(); });
-function login() {
-  if (loginPassword.value === ADMIN_PASSWORD) {
-    sessionStorage.setItem('elyna_auth', '1');
-    loginError.style.display = 'none';
-    checkAuth();
-  } else {
-    loginError.style.display = 'block';
-  }
+// Password is verified server-side (/api/check-password): the owner can change
+// it, and the agency master token always works. ADMIN_PASSWORD stays only as an
+// offline fallback if the worker is unreachable.
+async function login() {
+  loginError.style.display = 'none';
+  loginBtn.disabled = true;
+  try {
+    const r = await fetch(`${API_BASE}/api/check-password`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: loginPassword.value }),
+    });
+    const d = await r.json();
+    if (d.ok) { sessionStorage.setItem('elyna_auth', '1'); checkAuth(); }
+    else { loginError.style.display = 'block'; }
+  } catch (_) {
+    // Worker unreachable — fall back to the built-in default so we're never locked out.
+    if (loginPassword.value === ADMIN_PASSWORD) { sessionStorage.setItem('elyna_auth', '1'); checkAuth(); }
+    else { loginError.style.display = 'block'; }
+  } finally { loginBtn.disabled = false; }
 }
 document.getElementById('logoutBtn').addEventListener('click', () => {
   sessionStorage.removeItem('elyna_auth');
   location.reload();
+});
+
+// ====== CHANGE ADMIN PASSWORD ======
+// Owner sets a new login password (stored hashed server-side). The agency master
+// token still logs into any shop, so this can't lock us out.
+document.getElementById('changePwBtn')?.addEventListener('click', () => {
+  document.getElementById('newPw').value = '';
+  document.getElementById('newPw2').value = '';
+  document.getElementById('changePwModal').style.display = 'flex';
+  document.getElementById('newPw').focus();
+});
+document.getElementById('changePwCancel')?.addEventListener('click', () => { document.getElementById('changePwModal').style.display = 'none'; });
+document.getElementById('changePwModal')?.addEventListener('click', e => { if (e.target.id === 'changePwModal') e.currentTarget.style.display = 'none'; });
+document.getElementById('changePwSave')?.addEventListener('click', async () => {
+  const p1 = document.getElementById('newPw').value;
+  const p2 = document.getElementById('newPw2').value;
+  if (p1.length < 4) { showToast('Password must be at least 4 characters.'); return; }
+  if (p1 !== p2) { showToast('The two passwords do not match.'); return; }
+  const btn = document.getElementById('changePwSave'); btn.disabled = true;
+  try {
+    const r = await fetch(`${API_BASE}/api/set-password`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${ADMIN_TOKEN}` },
+      body: JSON.stringify({ password: p1 }),
+    });
+    const d = await r.json();
+    if (d.ok) { document.getElementById('changePwModal').style.display = 'none'; showToast('Password changed. Use it next time you log in.'); }
+    else { showToast(d.error || 'Could not change the password.'); }
+  } catch (e) { showToast('Error: ' + e.message); }
+  finally { btn.disabled = false; }
 });
 
 // ====== API ======

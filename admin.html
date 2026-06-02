@@ -33,6 +33,7 @@
     <h1>Elyna Footwear Admin</h1>
     <div class="admin-actions">
       <a class="btn-admin" href="index.html" target="_blank">View store →</a>
+      <button class="btn-admin" id="changePwBtn">Change password</button>
       <button class="btn-admin danger" id="logoutBtn">Logout</button>
     </div>
   </div>
@@ -452,6 +453,27 @@
 <div id="posReceiptPrint" aria-hidden="true"></div>
 
 <!-- SALE MODAL -->
+<!-- CHANGE PASSWORD MODAL -->
+<div id="changePwModal" class="modal" style="display:none;">
+  <div class="modal-card">
+    <h3>Change admin password</h3>
+    <p class="sub">Set a new password for logging into this admin. At least 4 characters.</p>
+    <div class="field">
+      <label>New password</label>
+      <input id="newPw" type="password" autocomplete="new-password">
+    </div>
+    <div class="field">
+      <label>Confirm new password</label>
+      <input id="newPw2" type="password" autocomplete="new-password">
+    </div>
+    <div class="admin-actions">
+      <button class="btn-admin primary" id="changePwSave" type="button">Save password</button>
+      <button class="btn-admin" id="changePwCancel" type="button">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- SALE MODAL -->
 <div id="saleModal" class="modal" style="display:none;">
   <div class="modal-card">
     <h3 id="saleModalTitle">Record a sale</h3>
@@ -649,6 +671,6 @@
   </div>
 </div>
 
-<script src="admin.js?v=elyna3"></script>
+<script src="admin.js?v=elyna4"></script>
 </body>
 </html>

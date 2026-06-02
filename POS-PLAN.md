@@ -1,6 +1,12 @@
 # Elyna Footwear — POS scope & pricing plan
 
-Status: **proposal / not built.** Drafted 2026-06-02 after Elyna asked "do you do POS?". Decide scope with her (open questions at the bottom) before building.
+Status: **Tier 1 + Tier 3 BUILT & LIVE** (2026-06-02). Tier 2 (M-Pesa Daraja) still a proposal — gated by Elyna getting a Till + Safaricom go-live. Drafted after Elyna asked "do you do POS?".
+
+## Built so far (live in admin → 🛒 Sell in store)
+- **Tier 1 checkout:** item autocomplete → size/qty/price → Cash/M-Pesa toggle → optional customer. Records through `apiMutateAndPublish` (decrements stock, pushes `sales[]` tagged `{paymentMethod, channel:'shop'}`), and saves the buyer to Clients when a phone is entered. Verified end-to-end in the live admin (sale recorded, stock decremented, then undone clean).
+- **Cash vs M-Pesa daily split:** "Today's takings" chips on the POS screen, computed in `renderDashboard` (sales without `paymentMethod` fall to Cash).
+- **Tier 3 receipts:** WhatsApp receipt (prefilled `wa.me`, owner taps send) + printable receipt (print-CSS, shop header/total/payment/date).
+- Reminder: in Tier 1, "M-Pesa" is just a label the owner taps; it does NOT take/verify payment. That's Tier 2.
 
 ## TL;DR
 

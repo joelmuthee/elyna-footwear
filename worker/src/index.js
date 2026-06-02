@@ -36,6 +36,13 @@ const b64ToBytes = b64 => {
   return bytes;
 };
 
+// SHA-256 hex — used to store the owner's admin login password as a hash under
+// the KV key "adminpass" (never returned by /api/bags, so it can't be read).
+async function sha256hex(s) {
+  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(String(s)));
+  return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, "0")).join("");
+}
+
 // Decode HTML entities IG slathers across og:description and the embed Caption
 // div. Named entities + decimal (&#064;) + hex (&#x40;). Per CATALOG-STANDARDS
 // "Instagram quick-add — Caption pre-processing" rules. Mostly cosmetic for
@@ -549,6 +556,29 @@ export default {
     }
 
     if (path === "/api/health") return json({ ok: true, time: new Date().toISOString() });
+
+    // ---- Admin login password (owner-settable soft barrier) ----
+    // Public: verify a login password. Returns { ok }. The agency ALWAYS gets in
+    // with the fleet MASTER_TOKEN (checked here, never returned), so a forgotten
+    // or changed owner password can never lock us out of any shop.
+    if (request.method === "POST" && path === "/api/check-password") {
+      let body; try { body = await request.json(); } catch { return json({ error: "invalid json" }, 400); }
+      const pw = String(body.password || "");
+      if (!pw) return json({ ok: false });
+      if (env.MASTER_TOKEN && pw === env.MASTER_TOKEN.trim()) return json({ ok: true, master: true });
+      const stored = await env.BAGS.get("adminpass");
+      if (!stored) return json({ ok: false, unset: true });
+      return json({ ok: (await sha256hex(pw)) === stored });
+    }
+    // Owner sets a new admin password (auth: current ADMIN_TOKEN). Stored hashed.
+    if (request.method === "POST" && path === "/api/set-password") {
+      if (!isAuthed(request, env)) return json({ error: "unauthorized" }, 401);
+      let body; try { body = await request.json(); } catch { return json({ error: "invalid json" }, 400); }
+      const pw = String(body.password || "");
+      if (pw.length < 4) return json({ error: "Password must be at least 4 characters" }, 400);
+      await env.BAGS.put("adminpass", await sha256hex(pw));
+      return json({ ok: true });
+    }
 
     // Buyer → GHL proxy.
     // DISABLED for Elyna: no GHL subaccount is provisioned yet, so we must NOT
