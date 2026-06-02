@@ -1254,7 +1254,16 @@ html { scroll-behavior: smooth; }
 }
 .clients-controls #clientsSearch:focus { outline: none; border-color: var(--gold, #a88847); }
 /* ~5 client rows tall, then scroll inside its own container (keeps the page short as the roster grows) */
-.clients-list { display: flex; flex-direction: column; gap: 10px; max-height: 360px; overflow-y: auto; padding-right: 4px; scrollbar-width: thin; scrollbar-color: var(--gold) var(--surface); }
+.clients-list {
+  display: flex; flex-direction: column; gap: 10px;
+  max-height: 360px; overflow-y: auto;
+  padding: 12px; background: var(--surface,#efe6d4); border: 1px solid var(--line,#ebe0c9); border-radius: 10px;
+  scrollbar-width: thin; scrollbar-color: var(--gold,#b8956a) var(--surface,#efe6d4);
+}
+.clients-list::-webkit-scrollbar { width: 9px; }
+.clients-list::-webkit-scrollbar-track { background: var(--surface,#efe6d4); border-radius: 4px; }
+.clients-list::-webkit-scrollbar-thumb { background: var(--gold,#b8956a); border-radius: 4px; }
+.clients-list::-webkit-scrollbar-thumb:hover { background: var(--gold-deep,#8a6f44); }
 .clients-list::-webkit-scrollbar { width: 9px; }
 .clients-list::-webkit-scrollbar-track { background: var(--surface); border-radius: 4px; }
 .clients-list::-webkit-scrollbar-thumb { background: var(--gold); border-radius: 4px; }
@@ -1291,8 +1300,8 @@ html { scroll-behavior: smooth; }
 }
 
 /* ===== POS — SELL IN STORE (Tier 1) + RECEIPTS (Tier 3) ===== */
-.admin-nav-pos { background: var(--choco); color: #fff !important; }
-.admin-nav-pos.active, .admin-nav-pos:hover { background: var(--choco-deep); color: #fff !important; }
+.admin-nav a.admin-nav-pos { background: var(--choco, var(--ink)); color: #fff !important; }
+.admin-nav a.admin-nav-pos.active, .admin-nav a.admin-nav-pos:hover { background: var(--choco-deep, var(--gold-deep)); color: #fff !important; }
 .pos-sub { font-size: 13.5px; color: var(--ink-soft); margin: -6px 0 14px; line-height: 1.5; }
 .pos-today { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 0 0 16px; }
 .pos-today-label { font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-faint); font-weight: 700; margin-right: 2px; }
