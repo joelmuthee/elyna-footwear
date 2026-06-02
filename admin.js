@@ -765,6 +765,7 @@ function openSaleModal(id) {
   buyerName.value = '';
   buyerPhone.value = '';
   buyerNotes.value = '';
+  document.querySelectorAll('#saleModalPay .pos-pay-btn').forEach(b => b.classList.toggle('active', b.dataset.pay === 'cash'));
   saleModal.style.display = 'flex';
   buyerName.focus();
 }
@@ -779,10 +780,13 @@ async function recordSale(withBuyer) {
   const size = saleSizeInput.value;
   const qty = parseInt(saleQtyInput.value, 10) || 1;
   const salePrice = parseInt(salePriceInput.value, 10) || curBag.price;
+  const payMethod = document.querySelector('#saleModalPay .pos-pay-btn.active')?.dataset.pay || 'cash';
   const sale = {
     size,
     qty,
     salePrice,
+    paymentMethod: payMethod,
+    channel: 'shop',
     buyerName: withBuyer ? buyerName.value.trim() : '',
     buyerPhone: withBuyer ? buyerPhone.value.trim() : '',
     notes: withBuyer ? buyerNotes.value.trim() : '',
@@ -807,12 +811,20 @@ async function recordSale(withBuyer) {
     renderInventory();
     showToast(`Sale recorded — ${qty}× ${size} sold.`);
     if (withBuyer && (sale.buyerName || sale.buyerPhone)) sendBuyerToGHL(soldBag, sale);
+    // Offer a receipt (same panel the Sell-in-store flow uses).
+    lastPosSale = { name: soldBag ? soldBag.name : '', size, qty, amount: salePrice, paymentMethod: sale.paymentMethod, buyerName: sale.buyerName, buyerPhone: sale.buyerPhone, soldAt: sale.soldAt };
+    showPosReceipt(lastPosSale);
+    document.getElementById('posDash').scrollIntoView({ behavior: 'smooth', block: 'start' });
   } catch (err) { showToast('Error: ' + err.message); }
 }
 
 document.getElementById('saleSaveBtn').addEventListener('click', () => recordSale(true));
 document.getElementById('saleSkipBtn').addEventListener('click', () => recordSale(false));
 document.getElementById('saleCancelBtn').addEventListener('click', closeSaleModal);
+document.getElementById('saleModalPay')?.addEventListener('click', e => {
+  const b = e.target.closest('.pos-pay-btn'); if (!b) return;
+  document.querySelectorAll('#saleModalPay .pos-pay-btn').forEach(x => x.classList.toggle('active', x === b));
+});
 
 // ====== EDIT / UNDO A RECORDED SALE ======
 let editingSale = null; // { bagId, soldAt }
