@@ -2337,7 +2337,7 @@ function posReset() {
   document.getElementById('posChosen').style.display = 'none';
   document.getElementById('posSaleFields').style.display = 'none';
   document.getElementById('posReceiptPanel').style.display = 'none';
-  document.getElementById('posCustomerFields').style.display = 'none';
+  document.getElementById('posCustomerFields').style.display = '';
   document.querySelectorAll('#posPay .pos-pay-btn').forEach(b => b.classList.toggle('active', b.dataset.pay === 'cash'));
 }
 
