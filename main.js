@@ -751,15 +751,14 @@ const API_BASE = 'https://elynafootwear-api.stawisystems.workers.dev';
     const css = ('@keyframes nzSusFade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}'
       + '#suspendedOverlay{position:fixed;inset:0;z-index:99999;background:radial-gradient(ellipse at top,#1a1612 0%,#0a0a0a 70%);color:#f2ece0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:40px 24px;font-family:Inter,system-ui,-apple-system,sans-serif;animation:nzSusFade 0.65s ease both;}'
       + '#suspendedOverlay .ns-logo{width:140px;height:140px;border-radius:50%;object-fit:cover;border:2px solid var(--gold,#c8a96a);box-shadow:0 0 36px rgba(200,169,106,0.32),inset 0 0 0 1px rgba(255,255,255,0.04);margin-bottom:26px;}'
-      + '#suspendedOverlay .ns-name{font-family:'Cormorant Garamond',Georgia,serif;font-size:34px;color:var(--gold-light,#e7d4a2);letter-spacing:2.5px;font-weight:500;line-height:1;margin-bottom:8px;}'
+      + '#suspendedOverlay .ns-name{font-family:"Cormorant Garamond",Georgia,serif;font-size:34px;color:var(--gold-light,#e7d4a2);letter-spacing:2.5px;font-weight:500;line-height:1;margin-bottom:8px;}'
       + '#suspendedOverlay .ns-tag{font-size:12px;color:var(--gold,#c8a96a);letter-spacing:2px;text-transform:uppercase;margin-bottom:30px;opacity:0.9;}'
       + '#suspendedOverlay .ns-rule{width:54px;height:1px;background:linear-gradient(90deg,transparent,var(--gold,#c8a96a),transparent);margin-bottom:30px;}'
-      + '#suspendedOverlay .ns-head{font-family:'Cormorant Garamond',Georgia,serif;font-weight:500;font-size:clamp(30px,5vw,44px);margin:0 0 16px;color:#f2ece0;line-height:1.15;}'
+      + '#suspendedOverlay .ns-head{font-family:"Cormorant Garamond",Georgia,serif;font-weight:500;font-size:clamp(30px,5vw,44px);margin:0 0 16px;color:#f2ece0;line-height:1.15;}'
       + '#suspendedOverlay .ns-body{font-size:16px;max-width:440px;line-height:1.65;opacity:0.78;margin:0 0 34px;}'
       + '#suspendedOverlay .ns-wa{display:inline-flex;align-items:center;gap:10px;background:var(--gold,#c8a96a);color:#0c0b0a;padding:14px 30px;border-radius:999px;text-decoration:none;font-weight:600;font-size:15px;letter-spacing:0.3px;box-shadow:0 6px 24px rgba(0,0,0,0.4);transition:transform 0.2s ease,box-shadow 0.2s ease,background 0.2s ease;}'
       + '#suspendedOverlay .ns-wa:hover{background:var(--gold-light,#e7d4a2);transform:translateY(-1px);}'
-      + '@media (max-width:480px){#suspendedOverlay .ns-logo{width:118px;height:118px;margin-bottom:22px;}#suspendedOverlay .ns-name{font-size:28px;letter-spacing:2px;}#suspendedOverlay .ns-tag{font-size:11px;margin-bottom:24px;}}'
-    );
+      + '@media (max-width:480px){#suspendedOverlay .ns-logo{width:118px;height:118px;margin-bottom:22px;}#suspendedOverlay .ns-name{font-size:28px;letter-spacing:2px;}#suspendedOverlay .ns-tag{font-size:11px;margin-bottom:24px;}}');
     const styleTag = document.createElement('style');
     styleTag.textContent = css;
     document.head.appendChild(styleTag);
