@@ -29,6 +29,19 @@ const isMaster = (req, env) => {
   return env.MASTER_TOKEN && auth.slice(7).trim() === env.MASTER_TOKEN.trim();
 };
 
+// When the store is suspended (billing kill-switch), the owner keeps READ access
+// to the admin but every WRITE is frozen. MASTER (agency) can still write so the
+// store can be maintained while suspended. Returns a 403 Response when the caller
+// is blocked, or null when the write may proceed. Authoritative gate: the admin
+// UI also blocks these, but this is the real lock the owner can't bypass.
+const suspendBlock = async (req, env) => {
+  if (isMaster(req, env)) return null;
+  if ((await env.BAGS.get("suspended")) === "1") {
+    return json({ error: "account suspended; contact billing to restore the store" }, 403);
+  }
+  return null;
+};
+
 const b64ToBytes = b64 => {
   const bin = atob(b64);
   const bytes = new Uint8Array(bin.length);
@@ -576,6 +589,7 @@ export default {
     // Owner sets a new admin password (auth: current ADMIN_TOKEN). Stored hashed.
     if (request.method === "POST" && path === "/api/set-password") {
       if (!isAuthed(request, env)) return json({ error: "unauthorized" }, 401);
+      const blocked = await suspendBlock(request, env); if (blocked) return blocked;
       let body; try { body = await request.json(); } catch { return json({ error: "invalid json" }, 400); }
       const pw = String(body.password || "");
       if (pw.length < 4) return json({ error: "Password must be at least 4 characters" }, 400);
@@ -635,6 +649,7 @@ export default {
     // Admin: reset aggregated insights (clears the shop-wide tally)
     if (request.method === "POST" && path === "/api/insights-reset") {
       if (!isAuthed(request, env)) return json({ error: "unauthorized" }, 401);
+      const blocked = await suspendBlock(request, env); if (blocked) return blocked;
       await env.BAGS.put("stats", JSON.stringify({ _lastUpdated: new Date().toISOString() }));
       return json({ ok: true });
     }
@@ -642,6 +657,7 @@ export default {
     // Admin: replace all data
     if (request.method === "POST" && path === "/api/bulk") {
       if (!isAuthed(request, env)) return json({ error: "unauthorized" }, 401);
+      const blocked = await suspendBlock(request, env); if (blocked) return blocked;
       let body;
       try { body = await request.json(); } catch { return json({ error: "invalid json" }, 400); }
       if (!Array.isArray(body.bags)) return json({ error: "bags must be array" }, 400);
@@ -658,6 +674,7 @@ export default {
     // Admin: upload image
     if (request.method === "POST" && path === "/api/image") {
       if (!isAuthed(request, env)) return json({ error: "unauthorized" }, 401);
+      const blocked = await suspendBlock(request, env); if (blocked) return blocked;
       let body;
       try { body = await request.json(); } catch { return json({ error: "invalid json" }, 400); }
       const { base64, ext } = body;
@@ -967,6 +984,7 @@ export default {
     //     instagramUrl }
     if (request.method === "POST" && path === "/api/ig-sync") {
       if (!isAuthed(request, env)) return json({ error: "unauthorized" }, 401);
+      const blocked = await suspendBlock(request, env); if (blocked) return blocked;
       let body;
       try { body = await request.json(); } catch { return json({ error: "invalid json" }, 400); }
       const items = Array.isArray(body.items) ? body.items : [];
