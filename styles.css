@@ -1295,6 +1295,21 @@ html { scroll-behavior: smooth; }
 .client-item-opt:hover, .client-item-opt:active { background: #faf6ec; }
 .client-item-opt span { color: #9a8e78; font-size: 12px; white-space: nowrap; flex-shrink: 0; }
 .client-item-empty { padding: 10px 12px; font-size: 13px; color: #999; }
+/* Bulk-sell modal: one row per selected item, with a per-item size control */
+.bulksell-rows { display: flex; flex-direction: column; gap: 6px; max-height: 200px; overflow-y: auto; scrollbar-width: thin; padding-right: 2px; margin-top: 4px; }
+.bulksell-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; background: rgba(0,0,0,0.035); border: 1px solid rgba(0,0,0,0.1); border-radius: 10px; padding: 6px 10px; }
+.bulksell-row-name { flex: 1 1 auto; min-width: 0; font-size: 12.5px; overflow-wrap: anywhere; }
+.bulksell-row .bsr-size { width: auto; max-width: 45%; flex: 0 0 auto; font-size: 12px; padding: 3px 6px; border: 1px solid rgba(0,0,0,0.2); border-radius: 6px; background: #fff; }
+.bulksell-row .bsr-onesize { font-size: 12px; opacity: 0.7; flex: 0 0 auto; white-space: nowrap; }
+/* Part-payment row (shared with the bulk-sell modal) */
+.paid-hint { font-size: 12px; color: #b3301f; margin: 5px 0 0; font-weight: 600; }
+.paid-row { display: flex; gap: 8px; align-items: stretch; }
+.paid-row input { flex: 1; min-width: 0; }
+.btn-paid-none { flex: 0 0 auto; cursor: pointer; white-space: nowrap; display: inline-flex; align-items: center; gap: 7px; font-size: 13px; font-weight: 700; padding: 0 16px; border-radius: 8px; color: #b3301f; background: #fff5f5; border: 1px solid #f0c2c2; transition: background .15s, color .15s, border-color .15s, box-shadow .15s; }
+.btn-paid-none::before { content: ""; width: 13px; height: 13px; border-radius: 50%; border: 2px solid currentColor; box-sizing: border-box; flex: 0 0 auto; transition: background .15s, box-shadow .15s; }
+.btn-paid-none:hover { background: #ffe8e6; border-color: #e7a9a3; }
+.btn-paid-none.active { background: #b3301f; color: #fff; border-color: #b3301f; box-shadow: 0 2px 8px rgba(179,48,31,0.28); }
+.btn-paid-none.active::before { background: #fff; box-shadow: inset 0 0 0 3px #b3301f; }
 .client-item-chosen { margin-top: 8px; font-size: 13px; color: var(--ink-soft, #6b5b48); }
 .client-item-chosen button { background: none; border: 0; color: #b00020; font-size: 13px; cursor: pointer; text-decoration: underline; padding: 0; }
 @media (max-width: 600px) {
