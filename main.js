@@ -365,7 +365,7 @@ const API_BASE = 'https://elynafootwear-api.stawisystems.workers.dev';
           </div>
           <div class="card-actions">
             <a class="btn-card primary${soldOut ? ' soldout' : ''}" href="${whatsappLink(item, soldOut)}" target="_blank" rel="noopener">
-              ${WA_SVG} ${soldOut ? 'Sold out · notify me' : 'Enquire'}
+              ${WA_SVG} ${soldOut ? 'Sold out · notify me' : 'Check availability'}
             </a>
             ${item.instagramUrl ? `<a class="btn-card ig" href="${item.instagramUrl}" target="_blank" rel="noopener" aria-label="View on Instagram">${IG_SVG} View on IG</a>` : ''}
           </div>
