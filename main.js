@@ -743,6 +743,8 @@ const API_BASE = 'https://elynafootwear-api.stawisystems.workers.dev';
     const tagline = settings.tagline || 'Brand new shoes';
     const igHandle = (settings.instagramHandle || 'elynafootwear').replace(/^@/, '');
     const igLink = igHandle ? ('https://www.instagram.com/' + igHandle + '/') : '';
+    const waLink = 'https://wa.me/254720615606?text=' + encodeURIComponent('Hi Essence, I\'d like to bring ' + shopName + ' back online. Tell me about the one-off option.');
+    const WA_SVG = '<svg viewBox="0 0 32 32" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M16.003 3C9.38 3 4 8.38 4 15.003c0 2.117.553 4.184 1.604 6.005L4 29l8.184-1.57a11.94 11.94 0 0 0 3.819.626h.003C22.626 28.056 28 22.676 28 16.053 28 9.43 22.626 3 16.003 3zm0 21.94h-.002a9.93 9.93 0 0 1-3.4-.62l-.244-.088-4.857.932.94-4.735-.16-.244a9.91 9.91 0 0 1-1.52-5.27c0-5.49 4.47-9.96 9.96-9.96 2.66 0 5.16 1.04 7.04 2.92a9.9 9.9 0 0 1 2.92 7.04c0 5.49-4.47 9.96-9.96 9.96zm5.46-7.46c-.3-.15-1.77-.873-2.044-.973-.274-.1-.474-.15-.673.15-.2.3-.773.973-.948 1.173-.174.2-.349.224-.648.075-.3-.15-1.265-.466-2.41-1.487-.89-.794-1.49-1.774-1.665-2.074-.174-.3-.018-.462.13-.611.134-.133.3-.349.449-.523.15-.174.2-.3.3-.498.1-.2.05-.374-.025-.524-.075-.15-.673-1.622-.922-2.222-.243-.583-.49-.504-.673-.513l-.573-.01c-.2 0-.524.075-.798.374-.274.3-1.047 1.023-1.047 2.495 0 1.472 1.072 2.894 1.222 3.094.15.2 2.11 3.222 5.11 4.516.714.308 1.272.492 1.706.63.717.228 1.37.196 1.886.119.575-.086 1.77-.724 2.02-1.423.25-.7.25-1.298.175-1.423-.074-.124-.274-.199-.573-.349z"></path></svg>';
     const logoUrl = 'images/logo-nav.jpg';
     document.title = shopName + ' · Offline';
 
@@ -755,7 +757,9 @@ const API_BASE = 'https://elynafootwear-api.stawisystems.workers.dev';
       + '#suspendedOverlay .ns-tag{font-size:12px;color:var(--gold,#c8a96a);letter-spacing:2px;text-transform:uppercase;margin-bottom:30px;opacity:0.9;}'
       + '#suspendedOverlay .ns-rule{width:54px;height:1px;background:linear-gradient(90deg,transparent,var(--gold,#c8a96a),transparent);margin-bottom:30px;}'
       + '#suspendedOverlay .ns-head{font-family:"Cormorant Garamond",Georgia,serif;font-weight:500;font-size:clamp(30px,5vw,44px);margin:0 0 16px;color:#f2ece0;line-height:1.15;}'
-      + '#suspendedOverlay .ns-body{font-size:16px;max-width:440px;line-height:1.65;opacity:0.78;margin:0 0 34px;}'
+      + '#suspendedOverlay .ns-body{font-size:16px;max-width:460px;line-height:1.65;opacity:0.82;margin:0 0 14px;}'
+      + '#suspendedOverlay .ns-offer{font-size:16px;max-width:460px;line-height:1.6;margin:0 0 30px;color:var(--gold-light,#e7d4a2);}'
+      + '#suspendedOverlay .ns-offer b{color:#f7eccb;font-weight:700;}'
       + '#suspendedOverlay .ns-wa{display:inline-flex;align-items:center;gap:10px;background:var(--gold,#c8a96a);color:#0c0b0a;padding:14px 30px;border-radius:999px;text-decoration:none;font-weight:600;font-size:15px;letter-spacing:0.3px;box-shadow:0 6px 24px rgba(0,0,0,0.4);transition:transform 0.2s ease,box-shadow 0.2s ease,background 0.2s ease;}'
       + '#suspendedOverlay .ns-wa:hover{background:var(--gold-light,#e7d4a2);transform:translateY(-1px);}'
       + '@media (max-width:480px){#suspendedOverlay .ns-logo{width:118px;height:118px;margin-bottom:22px;}#suspendedOverlay .ns-name{font-size:28px;letter-spacing:2px;}#suspendedOverlay .ns-tag{font-size:11px;margin-bottom:24px;}}');
@@ -770,9 +774,10 @@ const API_BASE = 'https://elynafootwear-api.stawisystems.workers.dev';
       + '<div class="ns-name">' + shopName + '</div>'
       + (tagline ? '<div class="ns-tag">' + tagline + '</div>' : '<div style="height:30px"></div>')
       + '<div class="ns-rule"></div>'
-      + '<h1 class="ns-head">This shop is currently offline</h1>'
-      + '<p class="ns-body">' + (igHandle ? 'For orders or questions, find us on Instagram.' : 'Please check back later.') + '</p>'
-      + (igHandle ? '<a class="ns-wa" href="' + igLink + '" target="_blank" rel="noopener">' + IG_SVG + ' Visit our Instagram</a>' : '')
+      + '<h1 class="ns-head">This shop is paused</h1>'
+      + '<p class="ns-body">Not ready for a monthly plan? You don\'t need one.</p>'
+      + '<p class="ns-offer">Now you can <b>own this shop outright for a one-time Ksh 20,000</b>, no monthly fees. New stock you post on Instagram pulls straight into your shop.</p>'
+      + '<a class="ns-wa" href="' + waLink + '" target="_blank" rel="noopener">' + WA_SVG + ' Bring my shop back</a>'
     );
     document.body.appendChild(o);
   }
